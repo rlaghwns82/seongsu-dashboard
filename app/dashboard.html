@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>성수동 문화시설 추천 대시보드</title>
+  <style>
+    :root {
+      --white: #ffffff;
+      --off-white: #f3f3f5;
+      --light-gray: #ddddE2;
+      --gray: #a8a8b1;
+      --dark-gray: #44444c;
+      --black: #101012;
+      --silver: #c5c7cf;
+      --shadow: rgba(0, 0, 0, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+      background: linear-gradient(145deg, #f6f6f8, #e7e8ec);
+      color: var(--black);
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(980px, 92%);
+      margin: 32px auto;
+    }
+
+    .title-wrap {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 2rem;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      color: var(--dark-gray);
+      font-size: 0.98rem;
+    }
+
+    .panel {
+      background: var(--white);
+      border: 1px solid var(--light-gray);
+      border-radius: 18px;
+      box-shadow: 0 10px 24px var(--shadow);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #111114, var(--silver), #111114);
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section:last-child {
+      margin-bottom: 0;
+    }
+
+    .section h3 {
+      margin: 0 0 12px;
+      font-size: 1.08rem;
+      color: var(--black);
+    }
+
+    .option-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .option-btn {
+      border: 1px solid #d3d4da;
+      background: #f8f8fa;
+      color: var(--dark-gray);
+      padding: 10px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+    }
+
+    .option-btn:hover {
+      border-color: var(--dark-gray);
+      background: #efeff3;
+    }
+
+    .option-btn.active {
+      background: var(--black);
+      border-color: var(--silver);
+      color: var(--white);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
+    }
+
+    .primary-btn,
+    .secondary-btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #0f0f11, #27272c);
+      color: var(--white);
+      width: 100%;
+      margin-top: 4px;
+      border: 1px solid #2f3035;
+    }
+
+    .primary-btn:hover {
+      background: linear-gradient(135deg, #0b0b0d, #202025);
+    }
+
+    .secondary-btn {
+      background: linear-gradient(135deg, #f0f0f3, #e6e7ec);
+      color: var(--black);
+      margin-top: 18px;
+      width: 100%;
+      border: 1px solid #d0d2d9;
+    }
+
+    .secondary-btn:hover {
+      background: linear-gradient(135deg, #e7e8ed, #dddfe7);
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .result-header h2 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+
+    .profile-summary {
+      color: var(--dark-gray);
+      font-size: 0.92rem;
+    }
+
+    .card-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .facility-card {
+      background: linear-gradient(170deg, #fdfdfe, #f4f5f8);
+      border: 1px solid #dddee4;
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 4px 12px rgba(16, 16, 18, 0.06);
+    }
+
+    .facility-name {
+      margin: 0 0 6px;
+      font-size: 1.04rem;
+      color: var(--black);
+    }
+
+    .facility-type {
+      margin: 0 0 12px;
+      color: var(--dark-gray);
+      font-size: 0.9rem;
+    }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.88rem;
+      color: var(--dark-gray);
+    }
+
+    .bar-track {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: #e1e3e9;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #7f828c, #111114);
+    }
+
+    .facility-info {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #e0e1e7;
+      font-size: 0.84rem;
+      color: var(--dark-gray);
+      display: grid;
+      gap: 5px;
+    }
+
+    .warning {
+      margin-top: 10px;
+      color: #d63a3a;
+      font-size: 0.9rem;
+      min-height: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .panel {
+        padding: 18px;
+      }
+
+      .title {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title-wrap">
+      <h1 class="title">성수동 문화시설 추천 대시보드</h1>
+      <p class="subtitle">사용자 프로필 기반으로 맞춤형 문화시설을 추천합니다.</p>
+    </div>
+
+    <div class="panel">
+      <section id="screenInput" class="screen active">
+        <div class="section" data-key="gender">
+          <h3>성별 선택</h3>
+          <div class="option-group">
+            <button type="button" class="option-btn" data-value="남">남</button>
+            <button type="button" class="option-btn" data-value="여">여</button>
+          </div>
+        </div>
+
+        <div class="section" data-key="age">
+          <h3>연령대 선택</h3>
+          <div class="option-group">
+            <button type="button" class="option-btn" data-value="20대">20대</button>
+            <button type="button" class="option-btn" data-value="30대">30대</button>
+            <button type="button" class="option-btn" data-value="40대">40대</button>
+            <button type="button" class="option-btn" data-value="50대">50대</button>
+            <button type="button" class="option-btn" data-value="60대">60대</button>
+          </div>
+        </div>
+
+        <div class="section" data-key="interest">
+          <h3>관심사 선택</h3>
+          <div class="option-group">
+            <button type="button" class="option-btn" data-value="문화">문화</button>
+            <button type="button" class="option-btn" data-value="여행">여행</button>
+            <button type="button" class="option-btn" data-value="아웃도어">아웃도어</button>
+            <button type="button" class="option-btn" data-value="디지털">디지털</button>
+          </div>
+        </div>
+
+        <div class="section" data-key="visitTime">
+          <h3>방문 시간 선택</h3>
+          <div class="option-group">
+            <button type="button" class="option-btn" data-value="오전">오전</button>
+            <button type="button" class="option-btn" data-value="오후">오후</button>
+            <button type="button" class="option-btn" data-value="저녁">저녁</button>
+          </div>
+        </div>
+
+        <div class="section" data-key="budget">
+          <h3>예산 선택</h3>
+          <div class="option-group">
+            <button type="button" class="option-btn" data-value="무료">무료</button>
+            <button type="button" class="option-btn" data-value="1만원 이하">1만원 이하</button>
+            <button type="button" class="option-btn" data-value="3만원 이하">3만원 이하</button>
+            <button type="button" class="option-btn" data-value="3만원 이상">3만원 이상</button>
+          </div>
+        </div>
+
+        <div class="section" data-key="companion">
+          <h3>동행 선택</h3>
+          <div class="option-group">
+            <button type="button" class="option-btn" data-value="혼자">혼자</button>
+            <button type="button" class="option-btn" data-value="친구와">친구와</button>
+            <button type="button" class="option-btn" data-value="연인과">연인과</button>
+            <button type="button" class="option-btn" data-value="가족과">가족과</button>
+          </div>
+        </div>
+
+        <button id="recommendBtn" class="primary-btn" type="button">추천받기</button>
+        <div id="warningText" class="warning"></div>
+      </section>
+
+      <section id="screenResult" class="screen">
+        <div class="result-header">
+          <h2>추천 결과 (상위 5개)</h2>
+          <div id="profileSummary" class="profile-summary"></div>
+        </div>
+        <div id="cardList" class="card-list"></div>
+        <button id="resetBtn" class="secondary-btn" type="button">다시 입력하기</button>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const selections = {
+      gender: "",
+      age: "",
+      interest: "",
+      visitTime: "",
+      budget: "",
+      companion: ""
+    };
+
+    const facilities = [
+      {"시설명":"아뜰리에아키","시설분류":"예술센터","카드_여_20대비율":0.085,"카드_여_30대비율":0.162,"카드_남_20대비율":0.055,"카드_남_30대비율":0.172,"문화이벤트관심점수":291.8,"해외여행관심점수":405.3,"아웃도어관심점수":115.5,"디지털성향점수":653.1,"시간_09_11비율":0.162,"시간_14_18비율":0.321,"시간_18시비율":0.066},
+      {"시설명":"더페이지갤러리","시설분류":"예술센터","카드_여_20대비율":0.085,"카드_여_30대비율":0.155,"카드_남_20대비율":0.056,"카드_남_30대비율":0.172,"문화이벤트관심점수":291.8,"해외여행관심점수":405.3,"아웃도어관심점수":115.5,"디지털성향점수":653.1,"시간_09_11비율":0.158,"시간_14_18비율":0.330,"시간_18시비율":0.067},
+      {"시설명":"갤러리쿰","시설분류":"예술센터","카드_여_20대비율":0.091,"카드_여_30대비율":0.168,"카드_남_20대비율":0.061,"카드_남_30대비율":0.165,"문화이벤트관심점수":298.4,"해외여행관심점수":412.1,"아웃도어관심점수":118.2,"디지털성향점수":641.2,"시간_09_11비율":0.145,"시간_14_18비율":0.342,"시간_18시비율":0.071},
+      {"시설명":"본다빈치뮤지엄서울숲","시설분류":"미술관","카드_여_20대비율":0.092,"카드_여_30대비율":0.159,"카드_남_20대비율":0.058,"카드_남_30대비율":0.168,"문화이벤트관심점수":305.2,"해외여행관심점수":421.5,"아웃도어관심점수":122.4,"디지털성향점수":668.3,"시간_09_11비율":0.171,"시간_14_18비율":0.315,"시간_18시비율":0.063},
+      {"시설명":"레이블갤러리","시설분류":"예술센터","카드_여_20대비율":0.089,"카드_여_30대비율":0.171,"카드_남_20대비율":0.054,"카드_남_30대비율":0.175,"문화이벤트관심점수":288.1,"해외여행관심점수":398.7,"아웃도어관심점수":112.8,"디지털성향점수":645.8,"시간_09_11비율":0.152,"시간_14_18비율":0.328,"시간_18시비율":0.069},
+      {"시설명":"우란문화재단","시설분류":"공연/연극","카드_여_20대비율":0.078,"카드_여_30대비율":0.148,"카드_남_20대비율":0.049,"카드_남_30대비율":0.158,"문화이벤트관심점수":312.5,"해외여행관심점수":388.2,"아웃도어관심점수":108.5,"디지털성향점수":598.4,"시간_09_11비율":0.138,"시간_14_18비율":0.298,"시간_18시비율":0.082},
+      {"시설명":"에이팩스컴즈","시설분류":"전시장/박물관","카드_여_20대비율":0.082,"카드_여_30대비율":0.155,"카드_남_20대비율":0.061,"카드_남_30대비율":0.162,"문화이벤트관심점수":278.3,"해외여행관심점수":375.4,"아웃도어관심점수":125.6,"디지털성향점수":712.4,"시간_09_11비율":0.168,"시간_14_18비율":0.308,"시간_18시비율":0.058},
+      {"시설명":"대한이앤티","시설분류":"전시장/박물관","카드_여_20대비율":0.071,"카드_여_30대비율":0.142,"카드_남_20대비율":0.068,"카드_남_30대비율":0.178,"문화이벤트관심점수":265.8,"해외여행관심점수":362.1,"아웃도어관심점수":142.3,"디지털성향점수":724.5,"시간_09_11비율":0.175,"시간_14_18비율":0.295,"시간_18시비율":0.055},
+      {"시설명":"FUTROSPACE","시설분류":"전시장/박물관","카드_여_20대비율":0.095,"카드_여_30대비율":0.165,"카드_남_20대비율":0.072,"카드_남_30대비율":0.182,"문화이벤트관심점수":322.4,"해외여행관심점수":445.2,"아웃도어관심점수":118.9,"디지털성향점수":748.2,"시간_09_11비율":0.155,"시간_14_18비율":0.345,"시간_18시비율":0.075},
+      {"시설명":"헬로우아일랜드","시설분류":"전시장/박물관","카드_여_20대비율":0.088,"카드_여_30대비율":0.158,"카드_남_20대비율":0.065,"카드_남_30대비율":0.171,"문화이벤트관심점수":295.6,"해외여행관심점수":408.3,"아웃도어관심점수":115.2,"디지털성향점수":685.3,"시간_09_11비율":0.148,"시간_14_18비율":0.318,"시간_18시비율":0.068},
+      {"시설명":"성수수제화희망플랫폼","시설분류":"전시장/박물관","카드_여_20대비율":0.065,"카드_여_30대비율":0.138,"카드_남_20대비율":0.058,"카드_남_30대비율":0.155,"문화이벤트관심점수":258.4,"해외여행관심점수":342.5,"아웃도어관심점수":132.8,"디지털성향점수":598.7,"시간_09_11비율":0.182,"시간_14_18비율":0.285,"시간_18시비율":0.052},
+      {"시설명":"HUMANARTMUSEUM","시설분류":"전시장/박물관","카드_여_20대비율":0.086,"카드_여_30대비율":0.161,"카드_남_20대비율":0.062,"카드_남_30대비율":0.169,"문화이벤트관심점수":302.1,"해외여행관심점수":418.4,"아웃도어관심점수":121.5,"디지털성향점수":662.8,"시간_09_11비율":0.162,"시간_14_18비율":0.325,"시간_18시비율":0.064},
+      {"시설명":"브레가아티스트프로젝트","시설분류":"전시장/박물관","카드_여_20대비율":0.083,"카드_여_30대비율":0.157,"카드_남_20대비율":0.059,"카드_남_30대비율":0.164,"문화이벤트관심점수":285.7,"해외여행관심점수":392.6,"아웃도어관심점수":114.3,"디지털성향점수":638.5,"시간_09_11비율":0.155,"시간_14_18비율":0.312,"시간_18시비율":0.067},
+      {"시설명":"우란1경","시설분류":"전시장/박물관","카드_여_20대비율":0.079,"카드_여_30대비율":0.151,"카드_남_20대비율":0.055,"카드_남_30대비율":0.159,"문화이벤트관심점수":275.3,"해외여행관심점수":378.9,"아웃도어관심점수":109.8,"디지털성향점수":615.2,"시간_09_11비율":0.142,"시간_14_18비율":0.302,"시간_18시비율":0.071},
+      {"시설명":"성수연방","시설분류":"공연/연극","카드_여_20대비율":0.094,"카드_여_30대비율":0.172,"카드_남_20대비율":0.068,"카드_남_30대비율":0.178,"문화이벤트관심점수":318.6,"해외여행관심점수":438.7,"아웃도어관심점수":128.4,"디지털성향점수":702.5,"시간_09_11비율":0.148,"시간_14_18비율":0.352,"시간_18시비율":0.078},
+      {"시설명":"성수아트홀","시설분류":"공연/연극","카드_여_20대비율":0.076,"카드_여_30대비율":0.145,"카드_남_20대비율":0.052,"카드_남_30대비율":0.155,"문화이벤트관심점수":308.4,"해외여행관심점수":382.5,"아웃도어관심점수":105.6,"디지털성향점수":582.3,"시간_09_11비율":0.135,"시간_14_18비율":0.288,"시간_18시비율":0.085},
+      {"시설명":"에스팩토리","시설분류":"공연/연극","카드_여_20대비율":0.091,"카드_여_30대비율":0.168,"카드_남_20대비율":0.065,"카드_남_30대비율":0.175,"문화이벤트관심점수":315.2,"해외여행관심점수":428.6,"아웃도어관심점수":122.8,"디지털성향점수":688.4,"시간_09_11비율":0.158,"시간_14_18비율":0.338,"시간_18시비율":0.072},
+      {"시설명":"신도문화공간","시설분류":"예술센터","카드_여_20대비율":0.081,"카드_여_30대비율":0.154,"카드_남_20대비율":0.057,"카드_남_30대비율":0.162,"문화이벤트관심점수":282.5,"해외여행관심점수":385.4,"아웃도어관심점수":111.5,"디지털성향점수":628.7,"시간_09_11비율":0.151,"시간_14_18비율":0.315,"시간_18시비율":0.065},
+      {"시설명":"뚝섬미술관","시설분류":"미술관","카드_여_20대비율":0.087,"카드_여_30대비율":0.163,"카드_남_20대비율":0.061,"카드_남_30대비율":0.168,"문화이벤트관심점수":298.7,"해외여행관심점수":415.2,"아웃도어관심점수":135.6,"디지털성향점수":645.8,"시간_09_11비율":0.172,"시간_14_18비율":0.322,"시간_18시비율":0.061},
+      {"시설명":"헬로우뮤지움","시설분류":"예술센터","카드_여_20대비율":0.093,"카드_여_30대비율":0.175,"카드_남_20대비율":0.064,"카드_남_30대비율":0.179,"문화이벤트관심점수":325.8,"해외여행관심점수":448.3,"아웃도어관심점수":119.2,"디지털성향점수":718.5,"시간_09_11비율":0.158,"시간_14_18비율":0.348,"시간_18시비율":0.073},
+      {"시설명":"성수소극장","시설분류":"공연/연극","카드_여_20대비율":0.074,"카드_여_30대비율":0.143,"카드_남_20대비율":0.051,"카드_남_30대비율":0.152,"문화이벤트관심점수":305.6,"해외여행관심점수":372.8,"아웃도어관심점수":102.4,"디지털성향점수":568.9,"시간_09_11비율":0.128,"시간_14_18비율":0.275,"시간_18시비율":0.092},
+      {"시설명":"EV6언플러그드그라운드","시설분류":"전시장/박물관","카드_여_20대비율":0.096,"카드_여_30대비율":0.169,"카드_남_20대비율":0.075,"카드_남_30대비율":0.185,"문화이벤트관심점수":328.5,"해외여행관심점수":452.6,"아웃도어관심점수":125.8,"디지털성향점수":758.6,"시간_09_11비율":0.152,"시간_14_18비율":0.355,"시간_18시비율":0.077},
+      {"시설명":"그라운드시소성수","시설분류":"전시장/박물관","카드_여_20대비율":0.097,"카드_여_30대비율":0.174,"카드_남_20대비율":0.073,"카드_남_30대비율":0.183,"문화이벤트관심점수":332.4,"해외여행관심점수":458.9,"아웃도어관심점수":128.5,"디지털성향점수":762.3,"시간_09_11비율":0.155,"시간_14_18비율":0.358,"시간_18시비율":0.079}
+    ];
+
+    const facilityDetails = {
+      "아뜰리에아키": { address: "서울 성동구 성수이로7길 30", hours: "화-일 11:00-19:00", feature: "작가 레지던시 기반 소규모 갤러리" },
+      "더페이지갤러리": { address: "서울 성동구 왕십리로2길 7", hours: "화-일 10:00-18:00", feature: "국내외 현대미술 전시 전문" },
+      "갤러리쿰": { address: "서울 성동구 성수이로 78", hours: "월-토 10:00-18:00", feature: "신진 작가 중심 기획 전시" },
+      "본다빈치뮤지엄서울숲": { address: "서울 성동구 왕십리로 83-21", hours: "매일 10:00-20:00", feature: "레오나르도 다빈치 미디어아트 체험관" },
+      "레이블갤러리": { address: "서울 성동구 성수이로7길 11", hours: "화-일 11:00-18:00", feature: "패션·라이프스타일 중심 갤러리" },
+      "우란문화재단": { address: "서울 성동구 왕십리로 22", hours: "공연일정에 따라 상이", feature: "소규모 공연·연극 전문 문화재단" },
+      "에이팩스컴즈": { address: "서울 성동구 성수이로 113", hours: "월-금 09:00-18:00", feature: "기업 전시·이벤트 복합공간" },
+      "대한이앤티": { address: "서울 성동구 성수일로12길 20", hours: "월-금 09:00-18:00", feature: "산업·기술 전시 전문 공간" },
+      "FUTROSPACE": { address: "서울 성동구 연무장길 15", hours: "화-일 11:00-20:00", feature: "미래지향적 브랜드 팝업 전문 공간" },
+      "헬로우아일랜드": { address: "서울 성동구 성수이로 55", hours: "매일 10:00-19:00", feature: "어린이·가족 대상 체험형 전시관" },
+      "성수수제화희망플랫폼": { address: "서울 성동구 성수이로7길 7", hours: "화-토 10:00-17:00", feature: "성수동 수제화 장인 문화 보존 공간" },
+      "HUMANARTMUSEUM": { address: "서울 성동구 아차산로17길 48", hours: "화-일 11:00-19:00", feature: "인체·생명 주제 현대미술 전시관" },
+      "브레가아티스트프로젝트": { address: "서울 성동구 성수이로14길 14", hours: "화-일 12:00-18:00", feature: "작가 협동조합 운영 전시 프로젝트" },
+      "우란1경": { address: "서울 성동구 왕십리로 22 지하1층", hours: "전시일정에 따라 상이", feature: "우란문화재단 산하 소규모 전시공간" },
+      "성수연방": { address: "서울 성동구 연무장15길 11", hours: "매일 11:00-22:00", feature: "F&B·팝업·문화행사 복합 쇼핑몰" },
+      "성수아트홀": { address: "서울 성동구 성수이로 49", hours: "공연일정에 따라 상이", feature: "중소규모 공연·콘서트 전용홀" },
+      "에스팩토리": { address: "서울 성동구 성수이로 78", hours: "행사일정에 따라 상이", feature: "대규모 팝업·전시·공연 복합공간" },
+      "신도문화공간": { address: "서울 성동구 성수이로7길 30", hours: "화-일 10:00-18:00", feature: "인쇄·출판 역사 기반 복합문화공간" },
+      "뚝섬미술관": { address: "서울 성동구 뚝섬로 273", hours: "화-일 10:00-18:00", feature: "서울숲 인근 현대미술 전문 미술관" },
+      "헬로우뮤지움": { address: "서울 성동구 왕십리로 83-21", hours: "화-일 10:00-18:00", feature: "어린이 대상 현대미술 체험 뮤지엄" },
+      "성수소극장": { address: "서울 성동구 성수이로 47", hours: "공연일정에 따라 상이", feature: "실험적 소규모 연극·퍼포먼스 공간" },
+      "EV6언플러그드그라운드": { address: "서울 성동구 아차산로 110", hours: "화-일 11:00-20:00", feature: "기아 EV6 브랜드 체험 복합문화공간" },
+      "그라운드시소성수": { address: "서울 성동구 연무장15길 11", hours: "매일 10:00-22:00", feature: "트렌디한 팝업·전시·카페 복합공간" }
+    };
+
+    const inputScreen = document.getElementById("screenInput");
+    const resultScreen = document.getElementById("screenResult");
+    const warningText = document.getElementById("warningText");
+    const profileSummary = document.getElementById("profileSummary");
+    const cardList = document.getElementById("cardList");
+    const recommendBtn = document.getElementById("recommendBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    document.querySelectorAll(".section").forEach((section) => {
+      const key = section.getAttribute("data-key");
+      const buttons = section.querySelectorAll(".option-btn");
+
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+          buttons.forEach((b) => b.classList.remove("active"));
+          button.classList.add("active");
+          selections[key] = button.getAttribute("data-value");
+          warningText.textContent = "";
+        });
+      });
+    });
+
+    function normalize(value, min, max) {
+      if (max === min) {
+        return 1;
+      }
+      return (value - min) / (max - min);
+    }
+
+    function getGenderAgeRaw(facility, gender, age) {
+      const male20 = facility["카드_남_20대비율"];
+      const male30 = facility["카드_남_30대비율"];
+      const female20 = facility["카드_여_20대비율"];
+      const female30 = facility["카드_여_30대비율"];
+
+      const ageWeightMap = {
+        "20대": [1.0, 0.0],
+        "30대": [0.0, 1.0],
+        "40대": [0.3, 0.7],
+        "50대": [0.5, 0.5],
+        "60대": [0.7, 0.3]
+      };
+
+      const [w20, w30] = ageWeightMap[age] || [0.0, 1.0];
+
+      if (gender === "남") {
+        return male20 * w20 + male30 * w30;
+      }
+      return female20 * w20 + female30 * w30;
+    }
+
+    function getInterestRaw(facility, interest) {
+      const keyMap = {
+        "문화": "문화이벤트관심점수",
+        "여행": "해외여행관심점수",
+        "아웃도어": "아웃도어관심점수",
+        "디지털": "디지털성향점수"
+      };
+      return facility[keyMap[interest]];
+    }
+
+    function getVisitTimeRaw(facility, visitTime) {
+      const keyMap = {
+        "오전": "시간_09_11비율",
+        "오후": "시간_14_18비율",
+        "저녁": "시간_18시비율"
+      };
+      return facility[keyMap[visitTime]];
+    }
+
+    function recommendFacilities() {
+      const genderAgeValues = facilities.map((f) =>
+        getGenderAgeRaw(f, selections.gender, selections.age)
+      );
+      const interestValues = facilities.map((f) =>
+        getInterestRaw(f, selections.interest)
+      );
+      const visitTimeValues = facilities.map((f) =>
+        getVisitTimeRaw(f, selections.visitTime)
+      );
+
+      const gaMin = Math.min(...genderAgeValues);
+      const gaMax = Math.max(...genderAgeValues);
+      const interestMin = Math.min(...interestValues);
+      const interestMax = Math.max(...interestValues);
+      const timeMin = Math.min(...visitTimeValues);
+      const timeMax = Math.max(...visitTimeValues);
+
+      return facilities
+        .map((facility) => {
+          const genderAgeRaw = getGenderAgeRaw(facility, selections.gender, selections.age);
+          const interestRaw = getInterestRaw(facility, selections.interest);
+          const visitTimeRaw = getVisitTimeRaw(facility, selections.visitTime);
+
+          const genderAgeScore = normalize(genderAgeRaw, gaMin, gaMax) * 30;
+          const interestScore = normalize(interestRaw, interestMin, interestMax) * 40;
+          const visitTimeScore = normalize(visitTimeRaw, timeMin, timeMax) * 30;
+          const totalScore = genderAgeScore + interestScore + visitTimeScore;
+
+          return {
+            name: facility["시설명"],
+            category: facility["시설분류"],
+            score: Math.round(totalScore)
+          };
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5);
+    }
+
+    function renderResults(recommendedFacilities) {
+      cardList.innerHTML = recommendedFacilities
+        .map(
+          (facility) => {
+            const info = facilityDetails[facility.name] || {
+              address: "정보 없음",
+              hours: "정보 없음",
+              feature: "정보 없음"
+            };
+            return `
+            <article class="facility-card">
+              <h3 class="facility-name">${facility.name}</h3>
+              <p class="facility-type">시설분류: ${facility.category}</p>
+              <div class="score-row">
+                <span>추천 점수</span>
+                <strong>${facility.score}점</strong>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width: ${facility.score}%;"></div>
+              </div>
+              <div class="facility-info">
+                <div>주소: ${info.address}</div>
+                <div>운영시간: ${info.hours}</div>
+                <div>특징: ${info.feature}</div>
+              </div>
+            </article>
+          `;
+          }
+        )
+        .join("");
+    }
+
+    function allSelected() {
+      return Object.values(selections).every(Boolean);
+    }
+
+    recommendBtn.addEventListener("click", () => {
+      if (!allSelected()) {
+        warningText.textContent = "모든 항목을 선택한 뒤 추천받기를 눌러주세요.";
+        return;
+      }
+
+      const recommendedFacilities = recommendFacilities();
+      profileSummary.textContent = `${selections.gender} / ${selections.age} / ${selections.interest} / ${selections.visitTime} / ${selections.budget} / ${selections.companion} 기준`;
+      renderResults(recommendedFacilities);
+      inputScreen.classList.remove("active");
+      resultScreen.classList.add("active");
+    });
+
+    resetBtn.addEventListener("click", () => {
+      Object.keys(selections).forEach((key) => {
+        selections[key] = "";
+      });
+
+      document.querySelectorAll(".option-btn").forEach((button) => {
+        button.classList.remove("active");
+      });
+
+      warningText.textContent = "";
+      resultScreen.classList.remove("active");
+      inputScreen.classList.add("active");
+    });
+  </script>
+</body>
+</html>
